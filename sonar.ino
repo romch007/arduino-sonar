@@ -37,7 +37,7 @@ int compute_distance() {
 
 void send_infos(int angle, int distance) {
   Serial.print(angle, DEC);
-  Serial.print(" ");
+  Serial.print(",");
   Serial.print(distance, DEC);
   Serial.print("\n");
 }
@@ -52,9 +52,11 @@ void setup() {
 }
 
 void loop() {
-  /* int d = compute_distance();
-  send_infos(90, d);
-  delay(5000); */
+  String command = Serial.readString();
+
+  if (command == "stop\n") {
+    in_scan = false;
+  }
 
   if (current_angle >= 170) {
     in_scan = false;
@@ -66,6 +68,6 @@ void loop() {
     current_distance = compute_distance();
     send_infos(current_angle, current_distance);
     current_angle += ANGLE_STEP;
-    delay(2000);
+    delay(1000);
   }
 }

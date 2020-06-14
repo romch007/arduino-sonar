@@ -5,6 +5,7 @@ import (
   "log"
   "strings"
   "strconv"
+  "bufio"
 
 	"github.com/tarm/serial"
 )
@@ -13,11 +14,16 @@ type Record struct {
   Angle, Distance int
 }
 
-func parseRecord(rawStr string) (record Record) {
-  strs := strings.Split(rawStr, " ")
+func parseRecord(rawRecord string) (record Record) {
+  strs := strings.Split(rawRecord, ",")
+
+  fmt.Println("strs:", strs)
 
   angle, _ := strconv.Atoi(strs[0])
   distance, _ := strconv.Atoi(strs[1])
+
+  fmt.Println("angle:", angle)
+  fmt.Println("distance:", distance)
 
   record = Record{Angle: angle, Distance: distance}
 
@@ -28,19 +34,21 @@ func StartReceiver(data chan Record) {
 	fmt.Println("Start receiving...")
 	c := &serial.Config{Name: "COM5", Baud: 9600}
 	s, err := serial.OpenPort(c)
+  defer s.Close()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
   for {
-    buf := make([]byte, 512)
-    n, err := s.Read(buf)
+
+    reader := bufio.NewReader(s)
+    received, err := reader.ReadBytes('\x0a')
 
     if err != nil {
-      log.Fatal(err)
+        panic(err)
     }
 
-    data <- parseRecord(string(buf)) 
+    data <- parseRecord(string(received))
   }
 }
