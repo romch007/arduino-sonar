@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Width = 1000
+	Width = 255
 	Height
 )
 
@@ -20,6 +20,8 @@ func degreeToRadian(angle float64) float64 {
 func convertCoordinates(record *receiver.Record) (x, y float64) {
 	x = float64(record.Distance) * math.Cos(degreeToRadian(float64(record.Angle)))
 	y = float64(record.Distance) * math.Sin(degreeToRadian(float64(record.Angle)))
+	x = Width/2 + x
+	y = Height/2 - y
 	return
 }
 
