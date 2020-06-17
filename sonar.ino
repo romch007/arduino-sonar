@@ -60,7 +60,9 @@ void loop() {
 
   if (current_angle >= 170) {
     in_scan = false;
+    Serial.print("end\n");
     servo.write(85);
+    delay(10000);
   }
 
   if (in_scan) {
@@ -68,6 +70,6 @@ void loop() {
     current_distance = compute_distance();
     send_infos(current_angle, current_distance);
     current_angle += ANGLE_STEP;
-    delay(1000);
+    delay(100);
   }
 }

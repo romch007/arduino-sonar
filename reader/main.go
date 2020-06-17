@@ -1,16 +1,26 @@
 package main
 
 import (
-	"fmt"
+	"sync"
 
-  "gitlab.com/romch007/sonar/reader/receiver"
+	"gitlab.com/romch007/sonar/reader/graphic"
+	"gitlab.com/romch007/sonar/reader/receiver"
 )
 
 func main() {
-  dataChan := make(chan receiver.Record)
-  go receiver.StartReceiver(dataChan);
+	dataChan := make(chan *receiver.Record)
 
-  for {
-    fmt.Println(<-dataChan)
-  }
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		receiver.StartReceiver(dataChan)
+	}()
+	go func() {
+		defer wg.Done()
+		graphic.StartGraphic(dataChan)
+	}()
+
+	wg.Wait()
 }

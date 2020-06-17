@@ -1,54 +1,63 @@
 package receiver
 
-import ( 
-  "fmt"
-  "log"
-  "strings"
-  "strconv"
-  "bufio"
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
 
 	"github.com/tarm/serial"
 )
 
 type Record struct {
-  Angle, Distance int
+	Angle, Distance int
 }
 
-func parseRecord(rawRecord string) (record Record) {
-  strs := strings.Split(rawRecord, ",")
+func isEndingMessage(rawString string) bool {
 
-  fmt.Println("strs:", strs)
-
-  angle, _ := strconv.Atoi(strs[0])
-  distance, _ := strconv.Atoi(strs[1])
-
-  fmt.Println("angle:", angle)
-  fmt.Println("distance:", distance)
-
-  record = Record{Angle: angle, Distance: distance}
-
-  return
+	return strings.Compare(strings.TrimSuffix(rawString, "\n"), "end") == 0
 }
 
-func StartReceiver(data chan Record) {
+func parseRecord(rawRecord string) (record *Record) {
+
+	strs := strings.Split(rawRecord, ",")
+
+	angle, _ := strconv.Atoi(strs[0])
+	distance, _ := strconv.Atoi(strings.TrimSuffix(strs[1], "\n"))
+
+	record = &Record{Angle: angle, Distance: distance}
+
+	return
+}
+
+func StartReceiver(recordsChan chan<- *Record) {
+
 	fmt.Println("Start receiving...")
 	c := &serial.Config{Name: "COM5", Baud: 9600}
 	s, err := serial.OpenPort(c)
-  defer s.Close()
+	defer s.Close()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-  for {
+	for {
+		reader := bufio.NewReader(s)
+		received, err := reader.ReadBytes('\x0a')
 
-    reader := bufio.NewReader(s)
-    received, err := reader.ReadBytes('\x0a')
+		if err != nil {
+			panic(err)
+		}
 
-    if err != nil {
-        panic(err)
-    }
+		toString := string(received)
 
-    data <- parseRecord(string(received))
-  }
+		if isEndingMessage(toString) {
+			fmt.Println("End signal received")
+			close(recordsChan)
+			break
+		} else {
+			recordsChan <- parseRecord(toString)
+		}
+	}
 }
