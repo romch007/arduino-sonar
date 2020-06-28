@@ -9,4 +9,5 @@ require (
 	github.com/hajimehoshi/ebiten v1.11.2
 	github.com/tarm/serial v0.0.0-20180830185346-98f6abe2eb07
 	golang.org/x/image v0.0.0-20200609002522-3f4726a040e8 // indirect
+	golang.org/x/tools/gopls v0.4.1 // indirect
 )

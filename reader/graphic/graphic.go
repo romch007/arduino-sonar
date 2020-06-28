@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Width = 255
+	Width = 400
 	Height
 )
 
@@ -17,11 +17,16 @@ func degreeToRadian(angle float64) float64 {
 	return angle * math.Pi / 180
 }
 
+func relativeCoords(x, y float64) (relativeX, relativeY float64) {
+	relativeX = Width/2 + x
+	relativeY = Height/2 - y
+	return
+}
+
 func convertCoordinates(record *receiver.Record) (x, y float64) {
 	x = float64(record.Distance) * math.Cos(degreeToRadian(float64(record.Angle)))
 	y = float64(record.Distance) * math.Sin(degreeToRadian(float64(record.Angle)))
-	x = Width/2 + x
-	y = Height/2 - y
+	x, y = relativeCoords(x, y)
 	return
 }
 
@@ -38,6 +43,12 @@ func isClosed(ch <-chan *receiver.Record) bool {
 func StartGraphic(recordsChan <-chan *receiver.Record) {
 	fmt.Println("Starting graphics...")
 	dc := gg.NewContext(Width, Height)
+
+	centerX, centerY := relativeCoords(0, 0)
+	dc.DrawPoint(centerX, centerY, float64(4))
+	dc.SetRGB255(0, 255, 0)
+	dc.Fill()
+
 	for {
 		if isClosed(recordsChan) {
 			fmt.Println("Saving image...")
@@ -46,16 +57,15 @@ func StartGraphic(recordsChan <-chan *receiver.Record) {
 			break
 		} else {
 			incoming := <-recordsChan
-			//fmt.Println("Receive", incoming)
+			// fmt.Println("Receive", incoming)
 			if incoming == nil {
 				continue
 			}
-			x, y := convertCoordinates(incoming)
-			fmt.Printf("(%f, %f)\n", x, y)
 
-			dc.DrawPoint(x, y, float64(2.0))
+			x, y := convertCoordinates(incoming)
+			dc.DrawPoint(x, y, float64(2))
 			dc.SetRGB255(255, 0, 0)
-			dc.Fill()
+      dc.Fill()
 		}
 	}
 }

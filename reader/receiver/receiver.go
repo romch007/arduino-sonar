@@ -33,7 +33,7 @@ func parseRecord(rawRecord string) (record *Record) {
 
 func StartReceiver(recordsChan chan<- *Record) {
 
-	fmt.Println("Start receiving...")
+	fmt.Println("Starting receiver...")
 	c := &serial.Config{Name: "COM5", Baud: 9600}
 	s, err := serial.OpenPort(c)
 	defer s.Close()

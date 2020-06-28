@@ -9,7 +9,6 @@ import (
 
 func main() {
 	dataChan := make(chan *receiver.Record)
-
 	var wg sync.WaitGroup
 	wg.Add(2)
 
